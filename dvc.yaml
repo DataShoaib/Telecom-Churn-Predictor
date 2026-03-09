@@ -1,0 +1,9 @@
+stages:
+  data-ingestion:
+    cmd: python -m src.data.data_ingesion
+    deps:
+      - data/raw/Telecom_Churn.csv
+      - src/data/data_ingesion.py
+      - logger/logger.py
+    outs:
+      - data/interim/cleaned_data.csv
