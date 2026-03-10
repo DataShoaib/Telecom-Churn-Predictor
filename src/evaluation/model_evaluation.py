@@ -6,7 +6,7 @@ from sklearn.metrics import roc_auc_score, precision_score, recall_score, f1_sco
 from sklearn.pipeline import Pipeline
 from logger.logger import get_logger
 
-logger = get_logger(__name__)
+logger = get_logger('Model-Evaluation')
 
 
 def load_data(x_path: str, y_path: str):
@@ -74,12 +74,12 @@ def main():
     try:
         # Load test data
         x_test, y_test = load_data(
-            "data/proccessed/x_test.csv",
-            "data/proccessed/y_test.csv"
+            "data/processed/split/X_test.csv",
+            "data/processed/split/y_test.csv"
         )
 
         # Load model
-        model = load_model("models/best_model.pkl")
+        model = load_model("models/model.pkl")
 
         # Evaluate
         metrics = evaluate_classification(model, x_test, y_test)

@@ -7,7 +7,7 @@ from sklearn.preprocessing import OneHotEncoder
 from logger.logger import get_logger
 import os
 
-logger=get_logger(__name__)
+logger=get_logger('Feature-Engineering')
 
 def load_data(file_path:str)->pd.DataFrame:
     try:
@@ -67,10 +67,9 @@ def encode_yes_no(X):
 def encode_gender(X):
     return (X == 'Male').astype(int)
 
-def column_preprocessor(data:pd.DataFrame)->pd.DataFrame:
+def column_preprocessor():
     try:
         logger.info('starting feature processing')
-        data['seniorcitizen_risk'] = data['seniorcitizen_risk'].astype(int)
         preprocessor = ColumnTransformer(
         transformers=[
             ('binary', FunctionTransformer(encode_yes_no),                     binary_cols),

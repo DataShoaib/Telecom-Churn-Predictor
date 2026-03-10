@@ -5,7 +5,7 @@ from xgboost import data
 from logger.logger import get_logger
 import os
 
-logger = get_logger(__name__)
+logger = get_logger('Data-Ingesion')
 
 def load_data(file_path:str)->pd.DataFrame:
     try:
@@ -34,33 +34,34 @@ def data_cleaning(data:pd.DataFrame)->pd.DataFrame:
 def removing_corr_and_irrelevent_col(data:pd.DataFrame)->pd.DataFrame:
     try:
         logger.info('removing highly correlated and irrelevent columns')
-        # irrelevant column
-        data.drop(columns=['customerID'],inplace=True)
-        # due to the high correlation with monyhlycharges.
-        data.drop(columns=['totalcharges'], inplace=True)
+        
+        data.drop(columns=['customerid'], inplace=True, errors='ignore')
+        data.drop(columns=['totalcharges'], inplace=True, errors='ignore')
+
         return data
     except Exception as e:
         logger.error(f'an error accured while removing correlated and irrelevant columns :{e}')
         raise
 
-
-def fixing_cols_data_types(data:pd.DataFrame)->pd.DataFrame:
+def fixing_cols_data_types(data: pd.DataFrame) -> pd.DataFrame:
     try:
         logger.info('fixing columns data types')
+
         cat_cols = [
-        "gender","Partner","Dependents",
-        "PhoneService","PaperlessBilling","Churn",
-        "MultipleLines","TechSupport","StreamingTV",
-        "OnlineBackup","DeviceProtection","StreamingMovies",
-        "Contract","OnlineSecurity","InternetService",
-        "PaymentMethod"
-    ]
-        # convert to category
+            "gender","partner","dependents",
+            "phoneservice","paperlessbilling","churn",
+            "multiplelines","techsupport","streamingtv",
+            "onlinebackup","deviceprotection","streamingmovies",
+            "contract","onlinesecurity","internetservice",
+            "paymentmethod"
+        ]
+
         data[cat_cols] = data[cat_cols].astype("category")
-        data["SeniorCitizen"] = data["SeniorCitizen"].map({0:"No",1:"Yes"}).astype("category")
-        data['TotalCharges']=pd.to_numeric(data['TotalCharges'],errors='coerce')
+
+        data["seniorcitizen"] = data["seniorcitizen"].map({0: "No", 1: "Yes"}).astype("category")
 
         return data
+
     except Exception as e:
         logger.error(f'an error accured while fixing columns data types :{e}')
         raise
