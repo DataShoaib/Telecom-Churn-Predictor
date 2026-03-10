@@ -23,15 +23,15 @@ stages:
     - src/model/model_building.py
     outs:
     - models/model.pkl
-    - data/processed/split/x_test.csv
-    - data/processed/split/x_train.csv
+    - data/processed/split/X_test.csv
+    - data/processed/split/X_train.csv
     - data/processed/split/y_test.csv
     - data/processed/split/y_train.csv
   model-evaluation:
     cmd: python -m src.evaluation.model_evaluation
     deps:
-    - data/proccessed/split/x_test.csv
-    - data/proccessed/split/y_test.csv
+    - data/processed/split/X_test.csv
+    - data/processed/split/y_test.csv
     - models/model.pkl
     - src/evaluation/model_evaluation.py
     outs:

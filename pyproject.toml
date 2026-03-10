@@ -5,6 +5,8 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "altair==4.2.2",
+    "dotenv>=0.9.9",
     "dvc>=3.66.1",
     "imblearn>=0.0",
     "ipykernel>=7.2.0",
@@ -15,6 +17,7 @@ dependencies = [
     "openai>=2.26.0",
     "pandas>=3.0.1",
     "plotly>=6.6.0",
+    "reportlab>=4.4.10",
     "scikit-learn>=1.8.0",
     "scipy>=1.17.1",
     "seaborn>=0.13.2",

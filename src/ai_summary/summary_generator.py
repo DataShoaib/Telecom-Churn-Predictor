@@ -5,8 +5,20 @@ import numpy as np
 from openai import OpenAI
 from sklearn.pipeline import Pipeline
 from logger.logger import get_logger
+import os
 
 logger = get_logger("summary-generator")
+
+
+
+# Get your API key
+api_key = os.getenv("OPENAI_API_KEY")
+
+# Optional: check if loaded
+if api_key is None:
+    raise ValueError(" API key not found. Make sure it's in the .env file.")
+else:
+    print("API key loaded successfully!")
 
 
 def load_model(model_path: str) -> Pipeline:
@@ -68,7 +80,7 @@ def get_feature_names(preprocessor, input_df):
 feature_names = get_feature_names(preprocessor, x_test)
 explainer = shap.LinearExplainer(model, x_test_transformed)
 
-client = OpenAI(api_key="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", base_url="https://api.groq.com/openai/v1")
+client = OpenAI(api_key=api_key, base_url="https://api.groq.com/openai/v1")
 
 
 def generate_customer_insights(customer):

@@ -1,0 +1,102 @@
+schema: '2.0'
+stages:
+  data-ingestion:
+    cmd: python -m src.data.data_ingesion
+    deps:
+    - path: data/raw/Telecom_Churn.csv
+      hash: md5
+      md5: 0f9de68e012bd3aed5fa7cdc9fc421af
+      size: 977501
+    - path: logger/logger.py
+      hash: md5
+      md5: 1fe9d70bdf8f09563becc74a11c04afb
+      size: 1353
+    - path: src/data/data_ingesion.py
+      hash: md5
+      md5: f3dcfa0f02b91c6d3fe4aa10f1a1f2bb
+      size: 3733
+    outs:
+    - path: data/interim/cleaned_data.csv
+      hash: md5
+      md5: bf081a955a4649d7459e17fa3ace3613
+      size: 648272
+  feature-eng:
+    cmd: python -m src.feature.feature_eng
+    deps:
+    - path: data/interim/cleaned_data.csv
+      hash: md5
+      md5: bf081a955a4649d7459e17fa3ace3613
+      size: 648272
+    - path: logger/logger.py
+      hash: md5
+      md5: 1fe9d70bdf8f09563becc74a11c04afb
+      size: 1353
+    - path: src/feature/feature_eng.py
+      hash: md5
+      md5: a620b8f94b6777033a02b068c91c718e
+      size: 4909
+    outs:
+    - path: data/processed/feature_eng_data.csv
+      hash: md5
+      md5: 2fadd6fc62b984f93f639dba0a86629a
+      size: 775186
+  model-building:
+    cmd: python -m src.model.model_building
+    deps:
+    - path: data/processed/feature_eng_data.csv
+      hash: md5
+      md5: 2fadd6fc62b984f93f639dba0a86629a
+      size: 775186
+    - path: logger/logger.py
+      hash: md5
+      md5: 1fe9d70bdf8f09563becc74a11c04afb
+      size: 1353
+    - path: src/model/model_building.py
+      hash: md5
+      md5: c6727069fc0d653c584c32d57089b008
+      size: 3232
+    outs:
+    - path: data/processed/split/X_test.csv
+      hash: md5
+      md5: 8a2dde77a2586884a1205202b4b6d17f
+      size: 150388
+    - path: data/processed/split/X_train.csv
+      hash: md5
+      md5: e1c9a4447bfe65c5984e40540901745f
+      size: 602165
+    - path: data/processed/split/y_test.csv
+      hash: md5
+      md5: f546e60b004754068bce0d463f294b61
+      size: 4234
+    - path: data/processed/split/y_train.csv
+      hash: md5
+      md5: 5301ae6a4d6b5c45a4f6eda3c068831a
+      size: 16909
+    - path: models/model.pkl
+      hash: md5
+      md5: fa673cfaf18f1075e70e44460185b09d
+      size: 4603
+  model-evaluation:
+    cmd: python -m src.evaluation.model_evaluation
+    deps:
+    - path: data/processed/split/X_test.csv
+      hash: md5
+      md5: 8a2dde77a2586884a1205202b4b6d17f
+      size: 150388
+    - path: data/processed/split/y_test.csv
+      hash: md5
+      md5: f546e60b004754068bce0d463f294b61
+      size: 4234
+    - path: models/model.pkl
+      hash: md5
+      md5: fa673cfaf18f1075e70e44460185b09d
+      size: 4603
+    - path: src/evaluation/model_evaluation.py
+      hash: md5
+      md5: 2273f7f82d57382ceba21eee3b40c3c0
+      size: 3055
+    outs:
+    - path: reports/metrics.json
+      hash: md5
+      md5: a58655f7ee17f2a66545c4f49c896978
+      size: 144
