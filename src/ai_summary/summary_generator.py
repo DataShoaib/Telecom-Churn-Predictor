@@ -1,4 +1,3 @@
-
 import pickle
 import pandas as pd
 import shap
@@ -8,21 +7,25 @@ from sklearn.pipeline import Pipeline
 from logger.logger import get_logger
 from dotenv import load_dotenv
 import os
+import streamlit as st   # ✅ ADDED
 
 load_dotenv()
 
 logger = get_logger("summary-generator")
 
+# ==============================
+# API KEY LOADING (UPDATED)
+# ==============================
 
+# First try Streamlit secrets, then fallback to .env
+api_key = st.secrets.get("OPENAI_API_KEY") 
 
-# Get your API key
-api_key = os.getenv("OPENAI_API_KEY")
-
-# Optional: check if loaded
-if api_key is None:
-    raise ValueError(" API key not found. Make sure it's in the .env file.")
+if not api_key:
+    raise ValueError("API key not found. Add it to Streamlit Secrets or .env")
 else:
-    print("API key loaded successfully!")
+    logger.info("API key loaded successfully!")
+
+# ==============================
 
 
 def load_model(model_path: str) -> Pipeline:
@@ -51,19 +54,17 @@ model = best_model.named_steps["model"]
 x_test = load_data("data/processed/split/X_test.csv")
 x_test_transformed = preprocessor.transform(x_test)
 
-# Get real feature names after OHE/preprocessing
+
+# Get real feature names after preprocessing
 def get_feature_names(preprocessor, input_df):
     try:
-        # Try sklearn's built-in method first
         names = preprocessor.get_feature_names_out()
-        # Clean up prefixes like "num__", "cat__" added by ColumnTransformer
         names = [n.split("__")[-1] for n in names]
         return names
     except Exception:
         pass
 
     try:
-        # Try ColumnTransformer manual extraction
         feature_names = []
         for name, transformer, cols in preprocessor.transformers_:
             if transformer == "drop":
@@ -77,32 +78,57 @@ def get_feature_names(preprocessor, input_df):
     except Exception:
         pass
 
-    # Fallback
     return [f"feature_{i}" for i in range(x_test_transformed.shape[1])]
 
 
 feature_names = get_feature_names(preprocessor, x_test)
+
 explainer = shap.LinearExplainer(model, x_test_transformed)
 
-client = OpenAI(api_key=api_key, base_url="https://api.groq.com/openai/v1")
+# ==============================
+# GROQ CLIENT
+# ==============================
+
+client = OpenAI(
+    api_key=api_key,
+    base_url="https://api.groq.com/openai/v1"
+)
+
+# ==============================
 
 
 def generate_customer_insights(customer):
     insights = []
+
     if customer.get("Contract") == "Month-to-month":
-        insights.append("Customer is on a month-to-month contract which often correlates with higher churn.")
+        insights.append(
+            "Customer is on a month-to-month contract which often correlates with higher churn."
+        )
+
     if customer.get("PaymentMethod") == "Electronic check":
-        insights.append("Electronic check payment users historically show higher churn behavior.")
+        insights.append(
+            "Electronic check payment users historically show higher churn behavior."
+        )
+
     if customer.get("tenure", 0) < 12:
-        insights.append("Customer joined recently and early churn is common in the first year.")
+        insights.append(
+            "Customer joined recently and early churn is common in the first year."
+        )
+
     if customer.get("tenure", 0) > 48:
-        insights.append("Long tenure customers are usually more loyal and less likely to churn.")
+        insights.append(
+            "Long tenure customers are usually more loyal and less likely to churn."
+        )
+
     return insights
 
 
 def predict_and_explain(customer_data: dict):
+
     customer_df = pd.DataFrame([customer_data])
+
     churn_prob = best_model.predict_proba(customer_df)[0][1]
+
     churn_pred = "High Risk 🔴" if churn_prob > 0.5 else "Low Risk 🟢"
 
     transformed = preprocessor.transform(customer_df)
@@ -113,12 +139,24 @@ def predict_and_explain(customer_data: dict):
         transformed_dense = np.array(transformed)
 
     shap_vals = explainer.shap_values(transformed_dense)[0]
-    data_row  = transformed_dense[0]
+
+    data_row = transformed_dense[0]
 
     feature_shap = list(zip(feature_names, shap_vals))
-    risk_factors = sorted(feature_shap, key=lambda x: abs(x[1]), reverse=True)[:5]
-    risk_text = "\n".join([f"{i+1}. {name} (impact {value:.3f})" for i, (name, value) in enumerate(risk_factors)])
+
+    risk_factors = sorted(
+        feature_shap,
+        key=lambda x: abs(x[1]),
+        reverse=True
+    )[:5]
+
+    risk_text = "\n".join(
+        [f"{i+1}. {name} (impact {value:.3f})"
+         for i, (name, value) in enumerate(risk_factors)]
+    )
+
     insights = generate_customer_insights(customer_data)
+
     insight_text = "\n".join([f"- {i}" for i in insights])
 
     prompt = f"""
@@ -149,6 +187,7 @@ RECOMMENDED RETENTION ACTIONS
         temperature=0.3,
         max_tokens=400
     )
+
     ai_text = response.choices[0].message.content
 
     shap_explanation = shap.Explanation(
